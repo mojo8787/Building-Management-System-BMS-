@@ -1,0 +1,71 @@
+# SpaceGate Building Management System Backend
+
+Welcome to the backend of the SpaceGate Building Management System. This project is designed to manage various aspects of building operations, including user management, task assignments, event scheduling, and more. This backend is built using AWS Amplify and TypeScript, providing a scalable and efficient solution for building management.
+
+## Project Overview
+
+This backend is part of a complete system for building management, developed for SpaceGate in 2024. The system is designed to handle complex building operations, including:
+
+- User and role management
+- Building and unit management
+- Task and maintenance request handling
+- Event scheduling and registration
+- Notification and messaging systems
+- Vehicle registration and approval
+- Billing and payment processing
+
+## Features
+
+- **User Management**: Supports roles such as superUser, admin, and tenant with customizable attributes.
+- **Building and Unit Models**: Manage buildings, units, and their relationships. 
+- **Task and Maintenance Management**: Create, assign, and track tasks and maintenance requests. 
+- **Event Management**: Schedule events, manage registrations, and track attendance. 
+- **Notification System**: Send and receive notifications and messages. 
+- **Vehicle Management**: Register and approve vehicles for building access. 
+- **Billing System**: Generate and process bills with payment integration. 
+- **Storage**: Manage storage for rental photos and profile pictures. 
+
+## Technology Stack
+
+- **AWS Amplify**: Backend infrastructure and services.
+- **TypeScript**: Strongly typed programming language for building robust applications.
+- **AWS CDK**: Infrastructure as code for AWS resources.
+- **DynamoDB**: NoSQL database for storing application data.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js and npm installed
+- AWS account with necessary permissions
+- Amplify CLI installed
+
+
+
+### Configuration
+
+- Update the `amplify/backend.ts` file to configure backend resources.
+- Modify `amplify/auth/resource.ts` for authentication settings.
+- Adjust `amplify/storage/resource.ts` for storage configurations.
+
+
+## Development
+
+- Use `npm run build` to compile TypeScript files.
+- Use `npm run start` to start the development server.
+
+## Contributing
+
+Contributions are welcome! Please fork the repository and submit a pull request.
+
+## Contact
+
+For any inquiries, please contact Motasem Younis, PhD at [motasem.youniss@gmail.com](mailto:motasem.youniss@gmail.com).
+
+## License
+
+This project is licensed under the ISC License.
+
+---
+
+This README provides a comprehensive overview of the backend system, its features, and how to get started. For more detailed information, refer to the codebase and documentation.
