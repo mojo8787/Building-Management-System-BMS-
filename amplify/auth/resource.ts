@@ -2,19 +2,23 @@ import { defineAuth } from '@aws-amplify/backend';
 
 export const auth = defineAuth({
   loginWith: {
-    email: true
+    email: true,
   },
   userAttributes: {
     preferredUsername: {
       mutable: true,
-      required: false
+      required: false,
     },
     'custom:role': {
       dataType: 'String',
       mutable: true,
       minLen: 1,
-      maxLen: 20
-    }
+      maxLen: 20,
+    },
+    'custom:tenantId': { // Add tenant ID for multi-tenancy
+      dataType: 'String',
+      mutable: false, // Prevent modification after creation
+    },
   },
-  roles: ['superUser', 'admin', 'tenant']
+  groups: ['superUser', 'admin', 'tenant'], // Define user groups here
 });

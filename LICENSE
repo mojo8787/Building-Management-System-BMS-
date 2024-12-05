@@ -1,0 +1,42 @@
+Business Source License 1.1
+
+This License applies to the "Building Management System (BMS)" software (the "Licensed Work") developed by the following co-founders:
+
+- Ahamad Malak (35%)
+- Hassanin Bahir (35%)
+- Almotasem Bellah Younis, PhD (30%) – Independent Co-Founder and Contributor
+
+Licensed Work: Building Management System (BMS) for Multi-tenancy on AWS.
+
+Licensor: SpaceGate
+
+Change Date: December 5, 2027  
+On the Change Date, the Licensed Work will transition to the Apache License 2.0.
+
+---
+
+### Licensing Terms
+
+1. **Licensed Grant**  
+   Subject to the terms of this License, you are granted the right to use the Licensed Work within the bounds of the “Usage Restrictions” below.
+
+2. **Usage Restrictions**  
+   - The Licensed Work may not be used for **commercial purposes** by anyone except the Licensor or its authorized sublicensees.
+   - You may not redistribute, sublicense, or modify the Licensed Work without explicit permission from the Licensor.
+   - The Licensed Work is provided for use as a service or rental. End users are bound by the Licensor’s terms of service.
+
+3. **Contributions**  
+   Contributions to this Licensed Work will be licensed under the same terms as the Licensed Work.
+
+4. **Warranty Disclaimer**  
+   The Licensed Work is provided "AS IS," without warranty of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement.
+
+5. **Termination**  
+   If you violate any terms of this License, your rights under this License will terminate automatically.
+
+6. **Governing Law**  
+   This License shall be governed by and construed in accordance with the laws of Iraq.
+
+---
+
+For inquiries regarding licensing, please contact **motasem.youniss@gmail.com**.
