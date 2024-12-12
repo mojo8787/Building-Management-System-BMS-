@@ -14,6 +14,11 @@ import { generateQRCode } from './functions/generateQRCode/resource';
 import { payBill } from './functions/payBill/resource';
 import { registerVehicle } from './functions/registerVehicle/resource';
 import { validateQRCode } from './functions/validateQRCode/resource';
+import { assignTaxiRequest } from './functions/Assign Taxi Request/resource';
+import { TaxiRequests } from './functions/Taxi Requests/resource';
+import { Tenant Announcements } from './functions/Tenant Announcements/resource';
+
+
 
 export const backend = defineBackend({
   auth,
@@ -31,4 +36,7 @@ export const backend = defineBackend({
   payBill,
   registerVehicle,
   validateQRCode,
+  assignTaxiRequest,
+  TaxiRequests,
+  TenantAnnouncements,
 });
