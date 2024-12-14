@@ -8,5 +8,5 @@ export const approveVehicle = defineFunction({
     VEHICLE_TABLE_NAME: 'VehicleTable',
   },
   timeoutSeconds: 30, // Optional: Execution timeout
-  memoryMB: 512, // Optional: Memory allocation
+  memoryMB: 128, // Optional: Memory allocation
 });

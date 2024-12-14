@@ -12,6 +12,8 @@
   "devDependencies": {
     "@aws-amplify/backend": "^1.8.0",
     "@aws-amplify/backend-cli": "^1.4.2",
+    "@aws-amplify/cli": "^12.13.1",
+    "@aws-amplify/data-schema": "^1.17.1",
     "@types/react": "^18.3.14",
     "@types/react-dom": "^18.3.2",
     "aws-cdk": "^2.171.1",
@@ -19,7 +21,7 @@
     "constructs": "^10.4.2",
     "esbuild": "^0.24.0",
     "tsx": "^4.19.2",
-    "typescript": "^4.9.5"
+    "typescript": "^5.7.2"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.705.0",

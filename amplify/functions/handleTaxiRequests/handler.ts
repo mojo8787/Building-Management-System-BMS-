@@ -35,7 +35,16 @@ export const handler = async (event: any) => {
   }
 
   try {
-    const taxiRequest = generateTaxiRequest(residentId, pickupLocation, destination, pickupTime);
+    // Define the taxi request object
+    const taxiRequest = {
+      id: `${Date.now()}`, // Unique ID
+      residentId,
+      pickupLocation,
+      destination,
+      pickupTime,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
 
     await db.send(
       new PutCommand({

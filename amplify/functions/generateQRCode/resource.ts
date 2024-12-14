@@ -9,5 +9,5 @@ export const generateQRCode = defineFunction({
     QR_TABLE_NAME: 'QRCodeTable',
   },
   timeoutSeconds: 30,
-  memoryMB: 512,
+  memoryMB: 128,
 });

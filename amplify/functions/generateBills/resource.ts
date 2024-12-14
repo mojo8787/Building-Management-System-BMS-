@@ -9,5 +9,5 @@ export const generateBills = defineFunction({
     BILL_TABLE_NAME: 'BillTable', // Environment variable for Bill table
   },
   timeoutSeconds: 30, // Optional: Function timeout (default is 25 seconds)
-  memoryMB: 512, // Optional: Memory allocation (default is 128 MB)
+  memoryMB: 128, // Optional: Memory allocation (default is 128 MB)
 });

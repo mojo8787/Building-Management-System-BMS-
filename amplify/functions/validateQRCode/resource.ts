@@ -8,5 +8,5 @@ export const validateQRCode = defineFunction({
     QR_TABLE_NAME: 'QRCodeTable',
   },
   timeoutSeconds: 30, // Optional: Execution timeout
-  memoryMB: 512, // Optional: Memory allocation
+  memoryMB: 128, // Optional: Memory allocation
 });

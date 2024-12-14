@@ -4,21 +4,18 @@ import { data } from './data/resource';
 import { storage } from './storage/resource';
 
 // Import all functions
-import { generateAnalytics } from './functions/Analytics Generation/resource';
-import { assignMaintenanceRequest } from './functions/Maintenance Request Assignment/resource';
-import { broadcastAnnouncement } from './functions/Tenant Announcements/resource';
+import { generateAnalytics } from './functions/generateAnalytics/resource';
+import { assignMaintenanceRequests } from './functions/assignMaintenanceRequests/resource';
+import { sendTenantAnnouncements } from './functions/sendTenantAnnouncements/resource';
 import { approveVehicle } from './functions/approveVehicle/resource';
-import { contactRental } from './functions/contactRental/resource';
+import { contactRentalUnit } from './functions/contactRentalUnit/resource';
 import { generateBills } from './functions/generateBills/resource';
 import { generateQRCode } from './functions/generateQRCode/resource';
-import { payBill } from './functions/payBill/resource';
+import { processBillPayment } from './functions/processBillPayment/resource';
 import { registerVehicle } from './functions/registerVehicle/resource';
 import { validateQRCode } from './functions/validateQRCode/resource';
-import { assignTaxiRequest } from './functions/Assign Taxi Request/resource';
-import { TaxiRequests } from './functions/Taxi Requests/resource';
-import { Tenant Announcements } from './functions/Tenant Announcements/resource';
-
-
+import { assignTaxiRequests } from './functions/assignTaxiRequests/resource';
+import { handleTaxiRequest } from './functions/handleTaxiRequests/resource';
 
 export const backend = defineBackend({
   auth,
@@ -27,16 +24,15 @@ export const backend = defineBackend({
 
   // Directly include functions here
   generateAnalytics,
-  assignMaintenanceRequest,
-  broadcastAnnouncement,
+  assignMaintenanceRequests,
+  sendTenantAnnouncements,
   approveVehicle,
-  contactRental,
+  contactRentalUnit,
   generateBills,
   generateQRCode,
-  payBill,
+  processBillPayment,
   registerVehicle,
   validateQRCode,
-  assignTaxiRequest,
-  TaxiRequests,
-  TenantAnnouncements,
+  assignTaxiRequests,
+  handleTaxiRequest,
 });

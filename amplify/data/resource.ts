@@ -1,21 +1,22 @@
 import { defineData, a } from '@aws-amplify/backend';
 
 const schema = a.schema({
-  // Building Model
   Building: a.model({
     tenantId: a.id().required(), // Multi-tenancy support
     name: a.string().required(),
     address: a.string().required(),
     towerCount: a.integer().required(),
+    towers: a.hasMany('Tower', 'buildingId'), // Relationship to towers
     floorsPerTower: a.integer().required(),
     unitsPerFloor: a.integer().required(),
-    units: a.hasMany('Unit', 'buildingId'),
-    events: a.hasMany('Event', 'buildingId'),
+    units: a.hasMany('Unit', 'buildingId'), // No direct cascade
+    events: a.hasMany('Event', 'buildingId'), // No direct cascade
     users: a.hasMany('User', 'assignedBuildingId'),
+    admins: a.hasMany('AdminBuildingAssignment', 'buildingId'), // Track admin assignments
   }).authorization(allow => [
     allow.groups(['admin', 'superUser']),
   ]),
-
+  
   // Unit Model
   Unit: a.model({
     tenantId: a.id().required(), // Multi-tenancy support
@@ -23,15 +24,22 @@ const schema = a.schema({
     status: a.enum(['sold', 'rented']),
     currentTenantId: a.id(),
     buildingId: a.id().required(),
+    towerId: a.id().required(), // Reference to the parent tower
+    floorId: a.id().required(), // Reference to the parent floor
     building: a.belongsTo('Building', 'buildingId'),
+    tower: a.belongsTo('Tower', 'towerId'), // New relationship
+    floor: a.belongsTo('Floor', 'floorId'), // New relationship
     tenant: a.belongsTo('User', 'currentTenantId'),
     tasks: a.hasMany('Task', 'unitId'),
     bills: a.hasMany('Bill', 'unitId'),
     maintenanceRequests: a.hasMany('MaintenanceRequest', 'unitId'),
+    leases: a.hasMany('Lease', 'unitId'), // Add this relationship
   }).authorization(allow => [
     allow.groups(['admin']),
   ]).secondaryIndexes(index => [
     index('buildingId'),
+    index('towerId'),
+    index('floorId'), // New indexes
   ]),
 
   // User Model
@@ -40,17 +48,20 @@ const schema = a.schema({
     name: a.string().required(),
     email: a.string().required(),
     phone: a.string(),
-    role: a.enum(['superUser', 'admin', 'tenant', 'TaxiDepartmentUser']),
+    role: a.enum(['superUser', 'admin', 'tenant', 'TaxiDepartmentUser', 'ListingDepartmentUser']),
     assignedBuildingId: a.id(),
-    unitId: a.id(),
-    currentUnit: a.hasOne('Unit', 'currentTenantId'),
     assignedBuilding: a.belongsTo('Building', 'assignedBuildingId'),
+    currentUnit: a.hasOne('Unit', 'currentTenantId'), // Remove .required() to make it optional
+    assignedBuildings: a.hasMany('AdminBuildingAssignment', 'userId'), // For admins managing multiple buildings
     maintenanceRequests: a.hasMany('MaintenanceRequest', 'assignedTo'),
     createdMaintenanceRequests: a.hasMany('MaintenanceRequest', 'createdBy'),
     receivedMessages: a.hasMany('Message', 'recipientId'),
     sentMessages: a.hasMany('Message', 'createdBy'),
-    departments: a.array(a.string()), // Departments the user manages (e.g., ['maintenance', 'rentals'])
-    permissionLevels: a.json(), // JSON object defining permission levels within the complex
+    departments: a.string().array(), // Departments the user manages
+    permissionLevels: a.json(), // JSON defining permission levels
+    departmentId: a.id(), // Add this field for Department relationship
+    department: a.belongsTo('Department', 'departmentId'), // Add this relationship
+    leases: a.hasMany('Lease', 'residentId'), // Add this relationship
   }).authorization(allow => [
     allow.owner(),
     allow.groups(['admin', 'superUser']),
@@ -79,6 +90,8 @@ const schema = a.schema({
     title: a.string().required(),
     description: a.string().required(),
     unitId: a.id().required(),
+    linkedRentalUnitId: a.id(),
+    linkedRentalUnit: a.belongsTo('RentalUnit', 'linkedRentalUnitId'),
     status: a.enum(['open', 'inProgress', 'resolved']),
     priority: a.enum(['low', 'medium', 'high']),
     assignedTo: a.id(),
@@ -158,6 +171,7 @@ const schema = a.schema({
     isRead: a.boolean().default(false),
     readBy: a.json(),
     linkedRentalUnitId: a.id(),
+    linkedRentalUnit: a.belongsTo('RentalUnit', 'linkedRentalUnitId'), // Added line
     recipient: a.belongsTo('User', 'recipientId'),
     sender: a.belongsTo('User', 'createdBy'),
   }).authorization(allow => [
@@ -262,6 +276,7 @@ const schema = a.schema({
   Photo: a.model({
     tenantId: a.id().required(), // Multi-tenancy support
     rentalUnitId: a.id().required(), // Foreign key to RentalUnit
+    rentalUnit: a.belongsTo('RentalUnit', 'rentalUnitId'), // Add relationship to RentalUnit
     photoUrl: a.string().required(), // URL of the photo
     description: a.string(), // Optional description of the photo
     createdAt: a.datetime().default('1970-01-01T00:00:00.000Z'), // For auditing
@@ -289,21 +304,9 @@ const schema = a.schema({
     severity: a.enum(['info', 'warning', 'critical']), // Severity level
     createdBy: a.id(), // Admin who created the notification (optional)
     createdAt: a.datetime().default('1970-01-01T00:00:00.000Z'),
-    acknowledgedBy: a.array(a.id()), // Users who acknowledged the notification
+    acknowledgedBy: a.id().array(), // Users who acknowledged the notification
   }).authorization(allow => [
     allow.groups(['admin', 'superUser']).to(['read', 'update']), // Admins and superUsers manage notifications
-  ]),
-
-  // CustomRole Model
-  CustomRole: a.model({
-    tenantId: a.id().required(), // Multi-tenancy support
-    name: a.string().required(), // Role name
-    permissions: a.json().required().default({
-      taxiRequestManagement: ["create", "update", "read"] // Taxi-related permissions
-    }), // JSON defining allowed actions
-    assignedTo: a.hasMany('User', 'roleId'), // Users assigned to this role
-  }).authorization(allow => [
-    allow.groups(['admin', 'superUser']).to(['create', 'update', 'read', 'delete']),
   ]),
 
   // SystemSetting Model
@@ -320,43 +323,45 @@ const schema = a.schema({
   Lease: a.model({
     tenantId: a.id().required(), // Multi-tenancy support
     residentId: a.id().required(), // Reference to the resident
+    resident: a.belongsTo('User', 'residentId'), // Add relationship to User
     unitId: a.id().required(), // The unit being leased
+    unit: a.belongsTo('Unit', 'unitId'), // Add relationship to Unit
     startDate: a.date().required(),
     endDate: a.date(),
     status: a.enum(['active', 'expired']),
   }).authorization(allow => [
-    allow.owner(), // Residents can view their own leases
+    allow.owner().identityClaim('residentId'), // Use identityClaim to map the owner to residentId
     allow.groups(['admin']).to(['read', 'update']), // Admins can manage leases
   ]),
 
   // Visitor Model
   Visitor: a.model({
-    tenantId: a.id().required(), // Multi-tenancy support
-    residentId: a.id().required(), // Reference to the resident who invited the visitor
-    name: a.string().required(), // Visitor's name
+    tenantId: a.id().required(),
+    residentId: a.id().required(),
+    name: a.string().required(),
     visitDate: a.date().required(),
-    qrCode: a.string().required(), // QR code for gate access
+    qrCode: a.string().required(),
   }).authorization(allow => [
-    allow.owner(), // Only the resident can create and view their visitors
-    allow.groups(['admin', 'superUser']).to(['read']), // Admins can view visitor logs
+    allow.owner().identityClaim('residentId'), // Use identityClaim to map ownership to residentId
+    allow.groups(['admin', 'superUser']).to(['read']), // Admin and SuperUser access
   ]),
 
   // ContactRequest Model
   ContactRequest: a.model({
-    tenantId: a.id().required(), // Multi-tenancy support
-    rentalUnitId: a.id().required(), // Reference to the RentalUnit
-    requesterName: a.string().required(), // Name of the person making the request
-    requesterEmail: a.string().required(), // Contact email of the requester
-    requesterPhone: a.string(), // Optional phone number
-    message: a.string(), // Inquiry message
-    status: a.enum(['new', 'inProgress', 'resolved']), // Status of the request
-    createdAt: a.datetime().default('1970-01-01T00:00:00.000Z'), // Timestamp for request creation
-    updatedAt: a.datetime().default('1970-01-01T00:00:00.000Z'), // Timestamp for last update
+    tenantId: a.id().required(),
+    rentalUnitId: a.id().required(),
+    requesterName: a.string().required(),
+    requesterEmail: a.string().required(),
+    requesterId: a.id().required(),
+    message: a.string(),
+    status: a.enum(['new', 'inProgress', 'resolved']),
+    createdAt: a.datetime().default('1970-01-01T00:00:00.000Z'),
+    updatedAt: a.datetime().default('1970-01-01T00:00:00.000Z'),
   }).authorization(allow => [
-    allow.groups(['admin', 'ListingDepartmentUser']).to(['create', 'read', 'update']), // Admin and ListingDepartmentUser can manage requests
-    allow.owner().to(['read']), // Requester can view their own request
+    allow.owner().identityClaim('requesterId'), // Use identityClaim to map ownership to requesterId
+    allow.groups(['admin', 'ListingDepartmentUser']).to(['create', 'read', 'update']), // Group-based access
   ]),
-
+  
   // TaxiRequest Model
   TaxiRequest: a.model({
     tenantId: a.id().required(), // Multi-tenancy support
@@ -365,14 +370,15 @@ const schema = a.schema({
     destination: a.string().required(),
     pickupTime: a.datetime().required(),
     status: a.enum(['pending', 'assigned', 'completed', 'cancelled']),
-    assignedDepartmentId: a.id(), // Department managing the request
+    assignedDepartmentId: a.id(), // Foreign key to Department
+    department: a.belongsTo('Department', 'assignedDepartmentId'), // Add relationship
     assignedBy: a.id(), // Admin or department user assigning the request
     createdAt: a.datetime().default('1970-01-01T00:00:00.000Z'),
     updatedAt: a.datetime().default('1970-01-01T00:00:00.000Z'),
-    notes: a.array(a.string()), // Admin notes or instructions
+    notes: a.string().array(), // Admin notes or instructions
   }).authorization(allow => [
-    allow.owner().to(['create', 'read']),
-    allow.groups(['admin', 'TaxiDepartmentUser']).to(['create', 'read', 'update']),
+    allow.owner().identityClaim('residentId'), // Use identityClaim to map ownership to residentId
+    allow.groups(['admin', 'TaxiDepartmentUser']).to(['create', 'read', 'update']), // Group-based access
   ]).secondaryIndexes(index => [
     index('status'),
     index('pickupLocation'),
@@ -386,11 +392,57 @@ const schema = a.schema({
     targetModel: a.string().required(), // Model being operated on (e.g., 'Unit')
     fileUrl: a.string(), // URL for uploaded file (if import/export)
     status: a.enum(['inProgress', 'completed', 'failed']),
-    errors: a.array(a.string()), // Errors encountered (if any)
+    errors: a.string().array(), // Errors encountered (if any)
     createdAt: a.datetime().default('1970-01-01T00:00:00.000Z'),
     completedAt: a.datetime(), // Timestamp when the operation was completed
   }).authorization(allow => [
     allow.groups(['admin']), // Only admins can manage bulk operations
+  ]),
+
+  // AdminBuildingAssignment Model
+  AdminBuildingAssignment: a.model({
+    tenantId: a.id().required(), // Multi-tenancy support
+    userId: a.id().required(), // Reference to the User
+    user: a.belongsTo('User', 'userId'), // Add relationship to User
+    buildingId: a.id().required(), // Reference to the Building
+    building: a.belongsTo('Building', 'buildingId'), // Add relationship to Building
+  }).authorization(allow => [
+    allow.groups(['admin', 'superUser']), // Restrict access to authorized users
+  ]),
+
+  // Department Model
+  Department: a.model({
+    tenantId: a.id().required(), // Multi-tenancy support
+    name: a.string().required(), // Department name
+    description: a.string(), // Optional description
+    assignedUsers: a.hasMany('User', 'departmentId'), // Link to users managing the department
+    taxiRequests: a.hasMany('TaxiRequest', 'assignedDepartmentId'), // Add this relationship
+  }).authorization(allow => [
+    allow.groups(['admin', 'superUser']), // Only authorized users manage departments
+  ]),
+
+  // Tower Model
+  Tower: a.model({
+    tenantId: a.id().required(), // Multi-tenancy support
+    buildingId: a.id().required(), // Reference to the parent building
+    name: a.string().required(), // Tower name (e.g., "Tower A")
+    number: a.integer().required(), // Tower number
+    floors: a.hasMany('Floor', 'towerId'), // Relationship to floors
+    building: a.belongsTo('Building', 'buildingId'), // Relationship to building
+    units: a.hasMany('Unit', 'towerId'), // Relationship to units
+  }).authorization(allow => [
+    allow.groups(['admin', 'superUser']), // Admins can manage towers
+  ]),
+
+  // Floor Model
+  Floor: a.model({
+    tenantId: a.id().required(), // Multi-tenancy support
+    towerId: a.id().required(), // Reference to the parent tower
+    number: a.integer().required(), // Floor number (e.g., 1, 2, etc.)
+    units: a.hasMany('Unit', 'floorId'), // Relationship to units
+    tower: a.belongsTo('Tower', 'towerId'), // Relationship to tower
+  }).authorization(allow => [
+    allow.groups(['admin', 'superUser']), // Admins can manage floors
   ]),
 });
 

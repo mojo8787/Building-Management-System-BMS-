@@ -1,7 +1,7 @@
 import { defineFunction } from '@aws-amplify/backend';
 
-export const payBill = defineFunction({
-  name: 'payBill', // Unique name for the function
+export const processBillPayment = defineFunction({
+  name: 'processBillPayment', // Unique name for the function
   entry: './handler.ts', // Path to the handler file
   runtime: 18, // Corrected runtime
   environment: {
@@ -9,5 +9,5 @@ export const payBill = defineFunction({
     BILL_TABLE_NAME: 'BillTable',
   },
   timeoutSeconds: 30, // Optional: Execution timeout
-  memoryMB: 512, // Optional: Memory allocation
+  memoryMB: 128, // Optional: Memory allocation
 });
